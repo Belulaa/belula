@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+    <body>
+        <header>
+            <div class="container">
+                <h1><a href="index.html">Wp Store</a></h1>
+                <nav>
+                    <ul>
+                        <li><a href="#categorias">Categorías</a></li>
+                        <li><a href="#arma-tu-pc">Arma tu PC</a></li>
+                        <li><a href="#ayuda">Ayuda</a></li>
+                        <li><a href="#carrito" id="carrito-link">Carrito (<span id="carrito-count">0</span>)</a></li>
+                    </ul>
+                </nav>
+                <button id="theme-toggle" aria-label="Cambiar tema">🌙</button>
+            </div>
+        </header>
+    
+        <main class="container">
+            <section id="home">
+                
+                <section id="productos">
+                    <h3>Productos destacados</h3>
+                    <div class="grid" id="productos-grid"></div>
+                </section>
+            </section>
+    
+            <section id="categorias" class="hidden">
+                <h2>Categorías</h2>
+                <p>Aquí encontrarás todas nuestras categorías de productos.</p>
+            </section>
+    
+            <section id="arma-tu-pc" class="hidden">
+                <h2>Arma tu PC</h2>
+                <p>Usa nuestra herramienta para armar tu PC personalizada.</p>
+            </section>
+    
+            <section id="ayuda" class="hidden">
+                <h2>Ayuda</h2>
+                <p>¿Necesitas ayuda? Estamos aquí para asistirte.</p>
+            </section>
+    
+            <section id="carrito" class="hidden">
+                <h2>Carrito</h2>
+                <div id="carrito-items"></div>
+                <p>Total: $<span id="carrito-total">0.00</span></p>
+                <button id="vaciar-carrito">Vaciar carrito</button>
+            </section>
+        </main>
+    
+        <footer>
+            <div class="container">
+                <p>&copy; 2023 TechMaster. Todos los derechos reservados.</p>
+            </div>
+        </footer>
+    
+        <script src="script.js"></script>
+    </body>
+</html>

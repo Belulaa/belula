@@ -78,6 +78,7 @@ h1, h2, h3 {
     text-align: center;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     position: relative;
+    transition: transform 0.3s;
 }
 
 .card img {
@@ -142,4 +143,37 @@ button:hover {
     .grid {
         grid-template-columns: 1fr;
     }
+}
+
+/* ======= ESTILOS PARA LAS NOTIFICACIONES ======= */
+#notification {
+    position: fixed;
+    top: 60px; 
+    left: 0;
+    width: 100%;
+    background-color: #007bff;
+    color: white;
+    text-align: center;
+    padding: 10px 0;
+    transition: transform 0.3s;
+    transform: translateY(-100%);
+    z-index: 1000;
+}
+
+#notification.show {
+    transform: translateY(0);
+}
+
+#notification.hidden {
+    transform: translateY(-100%);
+}
+
+.added-to-cart {
+    animation: pop 0.5s ease-out;
+}
+
+@keyframes pop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
 }

@@ -1,5 +1,5 @@
 class Product {
-    constructor(id, name, description, price, imageUrl) {
+    constructor({ id, name, description, price, imageUrl }) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -9,27 +9,31 @@ class Product {
 }
 
 const products = [
-    new Product("p1", "Joystick inalámbrico Xbox Negro", "Joystick xbox", 438232, "assets/img/Joystick.webp"),
-    new Product ( "p2", "Monitor gamer Samsung Odyssey", "Monitor gamer 144hz samsung", 507999.99, "assets/img/samsung144.webp"),
-    new Product ( "p3", "Teclado mecánico Hyperx Origins", "Teclado gamer mecánanico rgb", 129.99, "assets/img/teclado.webp"),
-    new Product ( "p4", "Microprocesador Amd Ryzen 7 5700x", "3.0ghz Socket Am4", 480000.00, "assets/img/procesador.webp"),
-    new Product( "p5", "Memoria RAM Trident Z 32GB (2x16)", "Memoria ram rgb marca gskill", 155333.99, "assets/img/ram.webp"),
-    new Product( "p6", "Mouse Logitech G703 Wireless", "Lightspeed 12000dpi", 86333.99, "assets/img/mouse.webp"),
+    new Product({ id: "p1", name: "Joystick inalámbrico Xbox Negro", description: "Joystick xbox", price: 438232, imageUrl: "assets/img/Joystick.webp" }),
+    new Product({ id: "p2", name: "Monitor gamer Samsung Odyssey", description: "Monitor gamer 144hz samsung", price: 507999.99, imageUrl: "assets/img/samsung144.webp" }),
+    new Product({ id: "p3", name: "Teclado mecánico Hyperx Origins", description: "Teclado gamer mecánanico rgb", price: 129.99, imageUrl: "assets/img/teclado.webp" }),
+    new Product({ id: "p4", name: "Microprocesador Amd Ryzen 7 5700x", description: "3.0ghz Socket Am4", price: 480000.00, imageUrl: "assets/img/procesador.webp" }),
+    new Product({ id: "p5", name: "Memoria RAM Trident Z 32GB (2x16)", description: "Memoria ram rgb marca gskill", price: 155333.99, imageUrl: "assets/img/ram.webp" }),
+    new Product({ id: "p6", name: "Mouse Logitech G703 Wireless", description: "Lightspeed 12000dpi", price: 86333.99, imageUrl: "assets/img/mouse.webp" })
 ];
 
 let cart = [];
 
-function createCard(item, isProduct) {
+function saveCartToLocalStorage() {
+    localStorage.setItem('cart', JSON.stringify(cart));
+}
+
+function createCard({ id, name, description, price, imageUrl }, isProduct) {
     const card = document.createElement('div');
     card.className = 'card';
     card.innerHTML = `
-        <img src="${item.imageUrl}" alt="${item.name}" class="card-image">
-        <h4>${item.name}</h4>
-        <p>${item.description}</p>
+        <img src="${imageUrl}" alt="${name}" class="card-image">
+        <h4>${name}</h4>
+        <p>${description}</p>
         <div class="card-footer">
-            <span>$${item.price.toFixed(2)}</span>
-            <button onclick="addToCart('${item.id}', ${isProduct})">
-                ${isProduct ? 'Añadir al carrito' : 'Contratar servicio'}
+            <span>$${price.toFixed(2)}</span>
+            <button onclick="addToCart('${id}', ${isProduct})">
+                Añadir al carrito
             </button>
         </div>
     `;
@@ -43,18 +47,38 @@ function renderItems() {
     });
 }
 
+function showNotification(message) {
+    const notification = document.getElementById('notification');
+    notification.textContent = message;
+    notification.classList.remove('hidden');
+    notification.classList.add('show');
+
+    setTimeout(() => {
+        notification.classList.remove('show');
+        notification.classList.add('hidden');
+    }, 3000);
+}
+
 function addToCart(id, isProduct) {
     const items = isProduct ? products : [];
     const item = items.find(i => i.id === id);
+
     if (item) {
+        const { name } = item;
         const existingItem = cart.find(i => i.id === id);
         if (existingItem) {
             existingItem.quantity += 1;
         } else {
             cart.push({ ...item, quantity: 1 });
-            console.log(`Añadido al carrito: ${item.name}`);
+            console.log(`Añadido al carrito: ${name}`);
         }
         updateCartUI();
+        saveCartToLocalStorage();
+        showNotification(`Producto añadido: ${name}`);
+
+        const cardElement = document.querySelector(`button[onclick="addToCart('${id}', ${isProduct})"]`).closest('.card');
+        cardElement.classList.add('added-to-cart');
+        setTimeout(() => cardElement.classList.remove('added-to-cart'), 1000);
     }
 }
 
@@ -63,38 +87,62 @@ function updateCartUI() {
     const cartItems = document.getElementById('carrito-items');
     const cartTotal = document.getElementById('carrito-total');
 
-    cartCount.textContent = cart.reduce((total, item) => total + item.quantity, 0);
+    cartCount.textContent = cart.reduce((total, { quantity }) => total + quantity, 0);
 
     cartItems.innerHTML = '';
     let total = 0;
 
-    cart.forEach(item => {
+    cart.forEach(({ id, name, price, quantity }) => {
         const itemElement = document.createElement('div');
         itemElement.innerHTML = `
-            <p>${item.name} - $${item.price.toFixed(2)} x ${item.quantity}</p>
-            <button onclick="removeFromCart('${item.id}')">Eliminar</button>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <p>${name} - $${price.toFixed(2)} x </p>
+                <div>
+                    <button onclick="decreaseQuantity('${id}')">-</button>
+                    <span>${quantity}</span>
+                    <button onclick="increaseQuantity('${id}')">+</button>
+                </div>
+                <button onclick="removeFromCart('${id}')">Eliminar</button>
+            </div>
         `;
         cartItems.appendChild(itemElement);
-        total += item.price * item.quantity;
+        total += price * quantity;
     });
 
     cartTotal.textContent = total.toFixed(2);
 }
 
-function removeFromCart(id) {
-    const index = cart.findIndex(item => item.id === id);
-    if (index !== -1) {
-        if (cart[index].quantity > 1) {
-            cart[index].quantity -= 1;
-        } else {
-            cart.splice(index, 1);
-        }
+function increaseQuantity(id) {
+    const item = cart.find(i => i.id === id);
+    if (item) {
+        item.quantity += 1;
         updateCartUI();
+        saveCartToLocalStorage();
+    }
+}
+
+function decreaseQuantity(id) {
+    const item = cart.find(i => i.id === id);
+    if (item && item.quantity > 1) {
+        item.quantity -= 1;
+    } else {
+        cart = cart.filter(i => i.id !== id);
+    }
+    updateCartUI();
+    saveCartToLocalStorage();
+}
+
+function removeFromCart(id) {
+    if (confirm("¿Estás seguro de eliminar este producto del carrito?")) {
+        cart = cart.filter(item => item.id !== id);
+        updateCartUI();
+        saveCartToLocalStorage();
     }
 }
 
 function vaciarCarrito() {
     cart = [];
+    saveCartToLocalStorage();
     console.log("Vaciaste el carrito");
     updateCartUI();
 }
@@ -114,6 +162,21 @@ function showSection(sectionId) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    const storedCart = localStorage.getItem('cart');
+    try {
+        if (storedCart) {
+            const parsedCart = JSON.parse(storedCart);
+            if (Array.isArray(parsedCart)) {
+                cart = parsedCart;
+                updateCartUI();
+            } else {
+                console.warn("Formato de carrito inválido en localStorage.");
+            }
+        }
+    } catch (e) {
+        console.error("Error al parsear el carrito de localStorage:", e);
+    }
+
     renderItems();
     document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
     document.getElementById('vaciar-carrito').addEventListener('click', vaciarCarrito);
